@@ -25,7 +25,8 @@ final class VisModel: ObservableObject {
         buf = [Float](repeating: 0, count: n)
         re = [Double](repeating: 0, count: n)
         im = [Double](repeating: 0, count: n)
-        window = (0..<n).map { 0.5 * (1 - cos(2 * Double.pi * Double($0) / Double(n - 1))) }
+        let size = 2048
+        window = (0..<size).map { 0.5 * (1 - cos(2 * Double.pi * Double($0) / Double(size - 1))) }
     }
 
     /// Demo state for snapshots.
