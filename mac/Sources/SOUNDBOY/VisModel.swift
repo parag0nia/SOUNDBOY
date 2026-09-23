@@ -30,8 +30,14 @@ final class VisModel: ObservableObject {
 
     /// Demo state for snapshots.
     func setDemo() {
-        bars = (0..<VisModel.barCount).map { i in Float(0.25 + 0.6 * abs(sin(Double(i) * 0.37)) * (1 - Double(i) / 60)) }
-        peaks = bars.map { min(1, $0 + 0.08) }
+        var demo = [Float](repeating: 0, count: VisModel.barCount)
+        for i in 0..<VisModel.barCount {
+            let wave: Double = abs(sin(Double(i) * 0.37))
+            let fade: Double = 1 - Double(i) / 60
+            demo[i] = Float(0.25 + 0.6 * wave * fade)
+        }
+        bars = demo
+        peaks = demo.map { min(1, $0 + 0.08) }
     }
 
     func update(tap: SampleTap, active: Bool, dt: Float) {

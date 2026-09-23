@@ -208,10 +208,7 @@ struct PlayingIndicator: View {
     var animating: Bool
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 20, paused: !animating)) { ctx in
-            let ph = animating ? ctx.date.timeIntervalSinceReferenceDate * 5.5 : 0
-            let hs: [CGFloat] = animating
-                ? [6 + 5 * abs(sin(ph)), 6 + 6 * abs(sin(ph + 1.3)), 5 + 5 * abs(sin(ph + 2.1))].map { CGFloat($0) }
-                : [8, 12, 6]
+            let hs = Self.heights(ctx.date, animating: animating)
             HStack(alignment: .bottom, spacing: 2) {
                 ForEach(0..<3, id: \.self) { i in
                     RoundedRectangle(cornerRadius: 1).fill(Theme.accent).frame(width: 3, height: hs[i])
@@ -219,6 +216,15 @@ struct PlayingIndicator: View {
             }
             .frame(height: 12, alignment: .bottom)
         }
+    }
+
+    static func heights(_ date: Date, animating: Bool) -> [CGFloat] {
+        guard animating else { return [8, 12, 6] }
+        let ph: Double = date.timeIntervalSinceReferenceDate * 5.5
+        let a: Double = 6 + 5 * abs(sin(ph))
+        let b: Double = 6 + 6 * abs(sin(ph + 1.3))
+        let c: Double = 5 + 5 * abs(sin(ph + 2.1))
+        return [CGFloat(a), CGFloat(b), CGFloat(c)]
     }
 }
 
