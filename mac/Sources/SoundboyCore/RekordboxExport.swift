@@ -219,7 +219,10 @@ public enum RekordboxExport {
     /// rekordbox location format on macOS: file://localhost/Users/me/Music/My%20Track.mp3
     public static func location(for url: URL) -> String {
         let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
-        let parts = url.standardizedFileURL.path.split(separator: "/", omittingEmptySubsequences: true)
+        // macOS hands out decomposed (NFD) paths; rekordbox and other apps expect composed (NFC) text.
+        // APFS lookups are normalization-insensitive, so the NFC form still resolves to the same file.
+        let path = url.standardizedFileURL.path.precomposedStringWithCanonicalMapping
+        let parts = path.split(separator: "/", omittingEmptySubsequences: true)
             .map { String($0).addingPercentEncoding(withAllowedCharacters: allowed) ?? String($0) }
         return "file://localhost/" + parts.joined(separator: "/")
     }
