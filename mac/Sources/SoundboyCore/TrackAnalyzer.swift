@@ -225,7 +225,13 @@ public enum TrackAnalyzer {
     }
 
     static func hann(_ n: Int) -> [Double] {
-        (0..<n).map { 0.5 * (1 - cos(2 * Double.pi * Double($0) / Double(n - 1))) }
+        var w = [Double](repeating: 0, count: n)
+        let step: Double = 2 * Double.pi / Double(n - 1)
+        for i in 0..<n {
+            let c: Double = cos(step * Double(i))
+            w[i] = 0.5 * (1 - c)
+        }
+        return w
     }
 }
 

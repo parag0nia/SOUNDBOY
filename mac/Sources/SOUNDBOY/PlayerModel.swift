@@ -4,6 +4,28 @@ import AVFoundation
 import SoundboyCore
 import UniformTypeIdentifiers
 
+/// Thread-safe slots for results produced by parallel workers.
+final class ResultsBox: @unchecked Sendable {
+    private var items: [AnalysisResult?]
+    private var done = 0
+    private let lock = NSLock()
+
+    init(count: Int) { items = [AnalysisResult?](repeating: nil, count: count) }
+
+    /// Stores a result and returns how many are done.
+    func set(_ i: Int, _ r: AnalysisResult) -> Int {
+        lock.lock(); defer { lock.unlock() }
+        items[i] = r
+        done += 1
+        return done
+    }
+
+    var results: [AnalysisResult?] {
+        lock.lock(); defer { lock.unlock() }
+        return items
+    }
+}
+
 struct RekordboxHelpInfo: Identifiable {
     let id = UUID()
     let xmlURL: URL
@@ -525,9 +547,7 @@ final class PlayerModel: ObservableObject {
             // Tags, then BPM/key for every track not analyzed yet (cached ones are instant), in parallel.
             for t in supported where !t.infoLoaded { await Metadata.load(t) }
             let todo = supported.filter { !$0.analyzed }
-            var results = [AnalysisResult?](repeating: nil, count: todo.count)
-            let lock = NSLock()
-            var done = 0
+            let box = ResultsBox(count: todo.count)
             DispatchQueue.concurrentPerform(iterations: todo.count) { i in
                 let url = todo[i].url
                 let r = cache.get(url) ?? {
@@ -535,10 +555,11 @@ final class PlayerModel: ObservableObject {
                     cache.put(url, r)
                     return r
                 }()
-                lock.lock(); results[i] = r; done += 1; let d = done; lock.unlock()
+                let d = box.set(i, r)
                 DispatchQueue.main.async { self.showTransient("Rekordbox: analyzing BPM & key \(d)/\(todo.count)…", seconds: 3) }
             }
             cache.save()
+            let results = box.results
             await MainActor.run {
                 for (i, t) in todo.enumerated() { if let r = results[i] { self.apply(r, to: t) } }
                 self.rekordboxBusy = false
