@@ -40,7 +40,13 @@ jobs:
       - name: UI snapshots (demo data)
         run: |
           mkdir -p mac/build/snapshots
-          SOUNDBOY_PROFILE=ci timeout 90 mac/build/SOUNDBOY.app/Contents/MacOS/SOUNDBOY --snapshot "$PWD/mac/build/snapshots" || true
+          # macOS has no `timeout`: run in the background and stop it after 90 s if it hasn't quit itself.
+          SOUNDBOY_PROFILE=ci mac/build/SOUNDBOY.app/Contents/MacOS/SOUNDBOY --snapshot "$PWD/mac/build/snapshots" > mac/build/snapshots/app.log 2>&1 &
+          pid=$!
+          for i in $(seq 90); do kill -0 $pid 2>/dev/null || break; sleep 1; done
+          if kill -0 $pid 2>/dev/null; then echo "app still running after 90 s, stopping it"; kill $pid; fi
+          wait $pid; echo "app exit code: $?"
+          cat mac/build/snapshots/app.log || true
           ls -la mac/build/snapshots
 
       - uses: actions/upload-artifact@v4
@@ -49,6 +55,7 @@ jobs:
           path: |
             mac/build/*.dmg
             mac/build/snapshots/*.png
+            mac/build/snapshots/app.log
           if-no-files-found: warn
 
       - name: Attach DMG to the GitHub release
