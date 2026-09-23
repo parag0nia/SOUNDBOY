@@ -40,13 +40,16 @@ jobs:
       - name: UI snapshots (demo data)
         run: |
           mkdir -p mac/build/snapshots
-          # macOS has no `timeout`: run in the background and stop it after 90 s if it hasn't quit itself.
-          SOUNDBOY_PROFILE=ci mac/build/SOUNDBOY.app/Contents/MacOS/SOUNDBOY --snapshot "$PWD/mac/build/snapshots" > mac/build/snapshots/app.log 2>&1 &
+          # Launch through LaunchServices (like a double-click) so the app gets a proper GUI session.
+          # macOS has no `timeout`: poll, and stop it after 120 s if it hasn't quit itself.
+          LOG="$PWD/mac/build/snapshots/app.log"
+          open -n -W --env SOUNDBOY_PROFILE=ci --stdout "$LOG" --stderr "$LOG" mac/build/SOUNDBOY.app \
+            --args --snapshot "$PWD/mac/build/snapshots" &
           pid=$!
-          for i in $(seq 90); do kill -0 $pid 2>/dev/null || break; sleep 1; done
-          if kill -0 $pid 2>/dev/null; then echo "app still running after 90 s, stopping it"; kill $pid; fi
-          wait $pid; echo "app exit code: $?"
-          cat mac/build/snapshots/app.log || true
+          for i in $(seq 120); do kill -0 $pid 2>/dev/null || break; sleep 1; done
+          if kill -0 $pid 2>/dev/null; then echo "app still running after 120 s, stopping it"; pkill -x SOUNDBOY || true; fi
+          wait $pid || true
+          echo "--- app log"; cat "$LOG" || true
           ls -la mac/build/snapshots
 
       - uses: actions/upload-artifact@v4

@@ -75,6 +75,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Self.handleKey(event) ? nil : event
         }
         if let i = CommandLine.arguments.firstIndex(of: "--snapshot"), i + 1 < CommandLine.arguments.count {
+            Snapshot.log("launched; windows: \(NSApp.windows.count)")
             Snapshot.run(outputDirectory: URL(fileURLWithPath: CommandLine.arguments[i + 1]))
         }
     }
@@ -178,15 +179,25 @@ enum Snapshot {
         }
 
         func capture(_ name: String, sheet: Bool = false) {
-            guard var w = NSApp.windows.first(where: { $0.isVisible && !($0 is NSPanel) }) else { return }
+            log("capture \(name): windows \(NSApp.windows.map { "\($0.className) visible=\($0.isVisible) \(Int($0.frame.width))x\(Int($0.frame.height))" })")
+            guard var w = NSApp.windows.first(where: { $0.isVisible && !($0 is NSPanel) }) else { log("  no visible window"); return }
             if sheet, let s = w.attachedSheet { w = s }
             let url = dir.appendingPathComponent(name)
-            if let cg = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution]) {
+            if let cg = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution]),
+               cg.width > 1 {
                 try? NSBitmapImageRep(cgImage: cg).representation(using: .png, properties: [:])?.write(to: url)
-            } else if let view = w.contentView, let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
+                log("  wrote \(name) via window capture \(cg.width)x\(cg.height)")
+            } else if let view = w.contentView?.superview ?? w.contentView, let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
                 view.cacheDisplay(in: view.bounds, to: rep)
                 try? rep.representation(using: .png, properties: [:])?.write(to: url)
+                log("  wrote \(name) via cacheDisplay")
+            } else {
+                log("  capture failed")
             }
         }
+    }
+
+    static func log(_ s: String) {
+        FileHandle.standardError.write(("[snapshot] " + s + "\n").data(using: .utf8)!)
     }
 }
