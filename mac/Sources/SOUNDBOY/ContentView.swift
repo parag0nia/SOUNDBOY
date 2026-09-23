@@ -3,6 +3,7 @@ import SoundboyCore
 import SwiftUI
 
 struct ContentView: View {
+    static let titleBarHeight: CGFloat = 28
     @EnvironmentObject var model: PlayerModel
 
     var body: some View {
@@ -19,7 +20,10 @@ struct ContentView: View {
         }
         .frame(width: 560)
         .background(Theme.window)
-        .ignoresSafeArea()
+        // The hidden title bar still reserves its height above the content, and the window grows by it.
+        // Pull the content up under the (transparent) title bar instead, so the window matches the design:
+        // our header row shares the strip with the traffic lights.
+        .padding(.top, -ContentView.titleBarHeight)
         .preferredColorScheme(.dark)
         .tint(Theme.accent)
         .sheet(item: $model.rekordboxHelp) { RekordboxHelpSheet(info: $0) }

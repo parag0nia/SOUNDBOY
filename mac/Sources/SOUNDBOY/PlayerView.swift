@@ -26,6 +26,7 @@ struct PlayerView: View {
 
     private var header: some View {
         ZStack(alignment: .topLeading) {
+            Color.clear.frame(width: 560, height: 40)
             HStack(spacing: 8) {
                 LogoMark(size: 24)
                 Text("SOUNDBOY").font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.text)
@@ -78,6 +79,7 @@ struct PlayerView: View {
         let pos = model.state == .stopped ? 0 : model.position
         let right = dur <= 0 ? "--:--" : model.settings.remainingTime ? "-" + TimeFormat.clock(dur - pos) : TimeFormat.length(dur)
         return ZStack(alignment: .topLeading) {
+            Color.clear // fills the row so children position from its top-left (not centered)
             TimelineView(.periodic(from: .now, by: 0.5)) { ctx in
                 let blinkOff = model.state == .paused && Int(ctx.date.timeIntervalSinceReferenceDate * 2) % 2 == 1
                 Text(TimeFormat.clock(pos))
@@ -105,6 +107,7 @@ struct PlayerView: View {
 
     private var controls: some View {
         ZStack(alignment: .topLeading) {
+            Color.clear // fills the row so children position from its top-left (not centered)
             IconButton(symbol: "shuffle", active: model.settings.shuffle, help: "Shuffle (S)") { model.toggleShuffle() }.at(16, 10, 32, 32)
             IconButton(symbol: model.settings.repeatMode == .one ? "repeat.1" : "repeat",
                        active: model.settings.repeatMode != .off, help: "Repeat: off / all / one (R)") { model.cycleRepeat() }.at(52, 10, 32, 32)

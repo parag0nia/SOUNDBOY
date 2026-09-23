@@ -115,7 +115,7 @@ final class PlayerModel: ObservableObject {
 
     /// Format chips, then the musical ones (BPM, key) which are drawn in the accent color.
     var chips: [(text: String, musical: Bool)] {
-        guard let t = loadedTrack, engine.file != nil else { return [] }
+        guard let t = loadedTrack, engine.file != nil || isDemo else { return [] }
         var out: [(text: String, musical: Bool)] = [(t.fileExtension.uppercased(), false)]
         if t.bitrate > 0 { out.append(("\(t.bitrate) kbps", false)) }
         let sr = t.sampleRate > 0 ? Double(t.sampleRate) : engine.sourceSampleRate
