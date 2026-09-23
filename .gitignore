@@ -5,3 +5,6 @@ SOUNDBOY-*-Kit/
 SOUNDBOY-release/
 *.user
 .vs/
+mac/.build/
+mac/build/
+mac/.swiftpm/
