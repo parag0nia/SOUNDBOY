@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Targets .NET Framework 4.8, which ships with Windows 10/11: the installer itself needs no runtime. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>SOUNDBOY-Setup</AssemblyName>
+    <RootNamespace>SoundboySetup</RootNamespace>
+    <ApplicationIcon>..\..\SOUNDBOY\app.ico</ApplicationIcon>
+    <ApplicationManifest>..\Shared\app.manifest</ApplicationManifest>
+    <Version>2.1.0</Version>
+    <Product>SOUNDBOY</Product>
+    <AssemblyTitle>SOUNDBOY Setup</AssemblyTitle>
+    <!-- Folder with the self-contained SOUNDBOY.exe and uninstall.exe to embed (set by build-kit.ps1). -->
+    <PayloadDir Condition="'$(PayloadDir)' == ''">..\..\kit-build\payload</PayloadDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\*.cs" />
+    <Reference Include="Microsoft.CSharp" />
+    <EmbeddedResource Include="..\..\SOUNDBOY\Assets\logo.png" LogicalName="setup.logo.png" />
+    <EmbeddedResource Include="$(PayloadDir)\SOUNDBOY.exe" LogicalName="payload.SOUNDBOY.exe" />
+    <EmbeddedResource Include="$(PayloadDir)\uninstall.exe" LogicalName="payload.uninstall.exe" />
+  </ItemGroup>
+</Project>

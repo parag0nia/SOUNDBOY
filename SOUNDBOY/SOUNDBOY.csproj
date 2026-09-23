@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows 10 SDK target gives access to SystemMediaTransportControls (media keys + Windows media flyout). -->
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SOUNDBOY</AssemblyName>
+    <RootNamespace>SOUNDBOY</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
+    <Version>2.1.0</Version>
+    <Product>SOUNDBOY</Product>
+    <Description>SOUNDBOY music player</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="app.ico" LogicalName="SOUNDBOY.app.ico" />
+    <EmbeddedResource Include="Assets\logo.png" LogicalName="SOUNDBOY.logo.png" />
+    <EmbeddedResource Include="Assets\Dunno Sample Shout.mp3" LogicalName="SOUNDBOY.Sample.mp3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+
+</Project>
